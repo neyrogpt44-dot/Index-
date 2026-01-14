@@ -1,163 +1,18 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>SGSHOP138 | Группировка по цветам</title>
-    <style>
-        :root { --fire: #ff0000; --bg: #000; --border: #1a1a1a; }
-        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; }
-        
-        .container { max-width: 1400px; margin: 0 auto; padding: 40px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-
-        /* Карточка каталога */
-        .item { background: #080808; border: 1px solid var(--border); cursor: pointer; padding: 20px; transition: 0.3s; }
-        .item:hover { border-color: #444; }
-        .item img { width: 100%; height: 220px; object-fit: contain; margin-bottom: 15px; }
-        
-        /* Модалка */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; justify-content: center; align-items: center; }
-        .modal.active { display: flex; }
-        .product-box { background: #000; width: 95%; max-width: 1100px; display: grid; grid-template-columns: 1.2fr 1fr; border: 1px solid var(--border); position: relative; }
-        
-        .image-side { background: #0a0a0a; padding: 40px; display: flex; align-items: center; justify-content: center; }
-        .image-side img { max-width: 100%; max-height: 450px; object-fit: contain; }
-
-        .info-side { padding: 40px; border-left: 1px solid var(--border); }
-        
-        /* Выбор цвета - миниатюры */
-        .color-label { font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; display: block; }
-        .color-picker { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-        .color-thumb { width: 70px; height: 70px; border: 1px solid #222; cursor: pointer; transition: 0.2s; background: #111; }
-        .color-thumb.active { border-color: var(--fire); }
-        .color-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
-        .color-thumb.active img { opacity: 1; }
-
-        /* Размеры */
-        .size-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 30px; }
-        .size-btn { background: none; border: 1px solid #222; color: #fff; padding: 12px 5px; cursor: pointer; font-size: 13px; }
-        .size-btn:hover { border-color: #fff; }
-        .size-btn.active { background: #fff; color: #000; font-weight: 800; }
-
-        .buy-btn { width: 100%; background: var(--fire); color: #fff; border: none; padding: 20px; font-weight: 900; cursor: pointer; }
-        .close-btn { position: absolute; right: 20px; top: 20px; cursor: pointer; font-size: 24px; color: #444; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="grid" id="main-grid"></div>
-</div>
-
-<div class="modal" id="p-modal">
-    <div class="product-box" id="p-content"></div>
-</div>
-
-<script>
-    let catalog = {}; // Группированный объект
-
-    async function loadData() {
-        const res = await fetch('/api/get');
-        const xml = new DOMParser().parseFromString(await res.text(), "text/xml");
-        const offers = Array.from(xml.querySelectorAll("offer"));
-
-        offers.forEach(el => {
-            const fullName = el.querySelector("name").textContent;
-            // Группируем по названию до скобок, чтобы объединить цвета
-            const groupName = fullName.split('(')[0].trim(); 
-            const img = el.querySelector("picture").textContent;
-            
-            // Получаем размер из параметров
-            const size = el.querySelector('param[name="Размер"]')?.textContent || 
-                         el.querySelector('param[name="size"]')?.textContent || "—";
-
-            if (!catalog[groupName]) {
-                catalog[groupName] = {
-                    name: groupName,
-                    brand: el.querySelector("vendor")?.textContent || "Бренд",
-                    description: el.querySelector("description")?.textContent || "",
-                    variants: {} // Тут группируем по КАРТИНКЕ (одна картинка = один цвет)
-                };
-            }
-
-            // Если такого цвета (картинки) еще нет в этой модели, создаем
-            if (!catalog[groupName].variants[img]) {
-                catalog[groupName].variants[img] = {
-                    img: img,
-                    price: el.querySelector("price").textContent,
-                    sizes: []
-                };
-            }
-            
-            // Добавляем размер к этому конкретному цвету
-            if (!catalog[groupName].variants[img].sizes.includes(size)) {
-                catalog[groupName].variants[img].sizes.push(size);
-            }
-        });
-
-        renderGrid();
-    }
-
-    function renderGrid() {
-        const grid = document.getElementById('main-grid');
-        grid.innerHTML = Object.values(catalog).map(p => {
-            const firstColor = Object.values(p.variants)[0];
-            return `
-                <div class="item" onclick="openProduct('${p.name.replace(/'/g, "\\'")}')">
-                    <img src="${firstColor.img}">
-                    <div style="color:var(--fire); font-size:10px; font-weight:900;">${p.brand}</div>
-                    <div style="font-size:14px; margin-top:5px;">${p.name}</div>
-                    <div style="margin-top:10px; font-size:12px; color:#555;">Цветов: ${Object.keys(p.variants).length}</div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function openProduct(name) {
-        const p = catalog[name];
-        const modal = document.getElementById('p-modal');
-        renderModalContent(p, Object.keys(p.variants)[0]); // Показываем первый цвет
-        modal.classList.add('active');
-    }
-
-    function renderModalContent(product, selectedImg) {
-        const variant = product.variants[selectedImg];
-        const content = document.getElementById('p-content');
-        
-        content.innerHTML = `
-            <div class="close-btn" onclick="closeM()">✕</div>
-            <div class="image-side">
-                <img src="${variant.img}">
-            </div>
-            <div class="info-side">
-                <span style="color:var(--fire); font-weight:900; font-size:12px;">${product.brand}</span>
-                <h1 style="font-size:24px; margin:10px 0 20px;">${product.name}</h1>
-                <div style="font-size:28px; font-weight:900; margin-bottom:30px;">${variant.price} ₽</div>
-                
-                <span class="color-label">Другие цвета модели:</span>
-                <div class="color-picker">
-                    ${Object.keys(product.variants).map(img => `
-                        <div class="color-thumb ${img === selectedImg ? 'active' : ''}" 
-                             onclick="updateColor('${product.name.replace(/'/g, "\\'")}', '${img}')">
-                            <img src="${img}">
-                        </div>
-                    `).join('')}
-                </div>
-
-                <span class="color-label">Доступные размеры:</span>
-                <div class="size-grid">
-                    ${variant.sizes.sort().map(s => `<button class="size-btn">${s}</button>`).join('')}
-                </div>
-
-                <button class="buy-btn" onclick="addToCart()">В КОРЗИНУ</button>
-            </div>
-        `;
-    }
-
-    window.updateColor = (name, img) => renderModalContent(catalog[name], img);
-    window.closeM = () => document.getElementById('p-modal').classList.remove('active');
-
-    loadData();
-</script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+      integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <title>Bosa Noga</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
 </html>
