@@ -1,150 +1,68 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Firebox Store</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-<style>
-:root {
-  --bg:#000;
-  --red:#ff0000;
-  --text:#fff;
-  --muted:#888;
-}
-
-*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,sans-serif}
-
-body{background:var(--bg);color:var(--text)}
-
-header{
-  position:sticky;
-  top:0;
-  background:#000;
-  padding:20px;
-  border-bottom:1px solid #111;
-  z-index:10;
-}
-
-header img{height:42px}
-
-main{padding:30px}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:20px;
-}
-
-.card{
-  background:#0a0a0a;
-  border:1px solid #111;
-  padding:14px;
-  display:flex;
-  flex-direction:column;
-  transition:.2s;
-}
-
-.card:hover{
-  border-color:var(--red);
-  transform:translateY(-4px);
-}
-
-.card img{
-  width:100%;
-  height:220px;
-  object-fit:contain;
-  background:#000;
-}
-
-.card h3{
-  font-size:14px;
-  font-weight:600;
-  margin:10px 0;
-  min-height:38px;
-}
-
-.price{
-  color:var(--red);
-  font-weight:700;
-  margin-bottom:10px;
-}
-
-.card a{
-  margin-top:auto;
-  background:var(--red);
-  color:#000;
-  padding:10px;
-  text-align:center;
-  text-decoration:none;
-  font-weight:700;
-}
-
-.loader{
-  text-align:center;
-  padding:30px;
-  opacity:.5;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGSHOP138</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; }
+        header { padding: 20px; text-align: center; border-bottom: 1px solid #222; position: sticky; top: 0; background: #000; z-index: 100; }
+        .logo { height: 50px; filter: drop-shadow(0 0 8px #ff0000); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; }
+        .card { background: #0c0c0c; border: 1px solid #1a1a1a; padding: 15px; transition: 0.3s; display: flex; flex-direction: column; }
+        .card:hover { border-color: #ff0000; transform: translateY(-3px); }
+        .card img { width: 100%; height: 260px; object-fit: contain; background: #000; margin-bottom: 10px; }
+        .name { font-size: 14px; margin: 10px 0; height: 34px; overflow: hidden; line-height: 1.2; }
+        .price { font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 15px; }
+        .btn { background: #ff0000; color: #fff; border: none; width: 100%; padding: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+        #status { text-align: center; padding: 100px; color: #ff0000; font-weight: 900; letter-spacing: 2px; }
+    </style>
 </head>
-
 <body>
 
-<header>
-  <img src="santa.png" alt="logo">
-</header>
+<header><img src="santa.png" class="logo"></header>
 
-<main>
-  <div id="products" class="grid"></div>
-  <div id="loader" class="loader">Загрузка...</div>
-</main>
+<div class="container">
+    <div id="status">ЗАГРУЗКА БАЗЫ...</div>
+    <div class="grid" id="catalog"></div>
+</div>
 
 <script>
-let page = 1;
-let loading = false;
-let end = false;
+    async function load() {
+        try {
+            const res = await fetch('/api/get');
+            const txt = await res.text();
+            const xml = new DOMParser().parseFromString(txt, "text/xml");
+            const offers = xml.querySelectorAll("offer");
+            
+            let html = '';
+            // Выводим первые 200 товаров для скорости
+            const list = Array.from(offers).slice(0, 200);
 
-async function loadProducts(){
-  if(loading || end) return;
-  loading = true;
+            list.forEach(item => {
+                const name = item.querySelector("name")?.textContent || "Товар";
+                const price = item.querySelector("price")?.textContent || "0";
+                const pic = item.querySelector("picture")?.textContent || "";
+                const url = item.querySelector("url")?.textContent || "#";
 
-  const res = await fetch(`/api/products?page=${page}&limit=24`);
-  const data = await res.json();
+                html += `
+                <div class="card">
+                    <img src="${pic}" loading="lazy">
+                    <div class="name">${name}</div>
+                    <div class="price">${price} ₽</div>
+                    <button class="btn" onclick="window.open('${url}')">КУПИТЬ</button>
+                </div>`;
+            });
 
-  if(!data.length){
-    document.getElementById('loader').innerText = 'Товары закончились';
-    end = true;
-    return;
-  }
-
-  const grid = document.getElementById('products');
-
-  data.forEach(p=>{
-    const el = document.createElement('div');
-    el.className = 'card';
-    el.innerHTML = `
-      <img src="${p.image}" loading="lazy">
-      <h3>${p.name}</h3>
-      <div class="price">${p.price} ₽</div>
-      <a href="${p.url}" target="_blank">Купить</a>
-    `;
-    grid.appendChild(el);
-  });
-
-  page++;
-  loading = false;
-}
-
-window.addEventListener('scroll',()=>{
-  if(window.innerHeight + window.scrollY > document.body.offsetHeight - 500){
-    loadProducts();
-  }
-});
-
-loadProducts();
+            document.getElementById('status').style.display = 'none';
+            document.getElementById('catalog').innerHTML = html;
+        } catch (e) {
+            document.getElementById('status').innerHTML = "ОШИБКА. ОБНОВИ ЧЕРЕЗ МИНУТУ.";
+        }
+    }
+    load();
 </script>
-
 </body>
 </html>
