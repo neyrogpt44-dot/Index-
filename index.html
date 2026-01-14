@@ -2,212 +2,237 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>SGSHOP138 | Кроссовки и Одежда</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>SGSHOP138 | Professional Store</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --fire: #ff0000; --bg: #000; --card-bg: #080808; --border: #1a1a1a; --text: #fff; }
+        :root { --main: #ff0000; --bg: #000; --border: #1a1a1a; --gray: #888; }
         * { box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding-top: 80px; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding-top: 80px; }
 
-        /* --- FIREBOX HEADER --- */
-        header { position: fixed; top: 0; width: 100%; height: 80px; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 1000; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; }
-        .logo img { height: 35px; }
-        .nav-center { display: flex; gap: 30px; }
-        .nav-link { text-transform: uppercase; font-size: 12px; font-weight: 700; cursor: pointer; color: #888; transition: 0.3s; }
+        /* HEADER - Копия структуры Firebox */
+        header { position: fixed; top: 0; width: 100%; height: 80px; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 1000; border-bottom: 1px solid var(--border); }
+        .header_main { max-width: 1440px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 100%; }
+        .logo img { height: 32px; }
+        .header-nav { display: flex; gap: 25px; }
+        .nav-link { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--gray); text-decoration: none; transition: 0.3s; }
         .nav-link:hover, .nav-link.active { color: #fff; }
-        
-        /* --- CONTROLS BAR --- */
-        .controls-bar { max-width: 1440px; margin: 0 auto; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        .filter-trigger { background: var(--fire); color: #fff; padding: 10px 25px; font-weight: 800; text-transform: uppercase; font-size: 11px; cursor: pointer; border: none; }
-        .grid-switcher { display: flex; gap: 10px; align-items: center; }
-        .grid-switcher span { color: #444; font-size: 11px; font-weight: 800; }
-        .grid-btn { width: 30px; height: 30px; border: 1px solid #333; background: none; color: #fff; cursor: pointer; }
-        .grid-btn.active { border-color: var(--fire); color: var(--fire); }
 
-        /* --- PRODUCT GRID SYSTEM --- */
-        .main-container { display: flex; max-width: 1440px; margin: 0 auto; padding: 0 40px; }
+        /* FILTER BAR */
+        .filter-wrapper { background: #000; border-bottom: 1px solid var(--border); position: sticky; top: 80px; z-index: 900; }
+        .filter-content { max-width: 1440px; margin: 0 auto; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; }
         
-        .sidebar { width: 250px; padding: 40px 0; flex-shrink: 0; }
-        .filter-group { margin-bottom: 30px; }
-        .filter-label { font-size: 14px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px; display: block; }
-        .filter-item { color: #888; font-size: 13px; margin-bottom: 8px; cursor: pointer; display: block; }
-        .filter-item:hover { color: #fff; }
+        .grid-control { display: flex; align-items: center; gap: 15px; }
+        .grid-control span { font-size: 11px; font-weight: 900; color: #444; }
+        input[type="range"] { accent-color: var(--main); width: 100px; cursor: pointer; }
 
-        .content { flex-grow: 1; padding: 40px 0 40px 40px; }
-        .catalog { display: grid; gap: 20px; transition: 0.3s; }
+        /* MAIN LAYOUT */
+        .main-container { max-width: 1440px; margin: 0 auto; display: flex; padding: 0 40px; }
         
-        /* Динамические сетки */
-        .grid-4 { grid-template-columns: repeat(4, 1fr); }
-        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        /* SIDEBAR */
+        aside { width: 260px; padding: 40px 0; flex-shrink: 0; border-right: 1px solid var(--border); }
+        .filter-group-title { font-size: 12px; font-weight: 900; text-transform: uppercase; color: #444; margin-bottom: 20px; display: block; }
+        .brand-item { color: var(--gray); font-size: 14px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; display: block; }
+        .brand-item:hover, .brand-item.active { color: #fff; font-weight: 700; }
 
-        /* --- PRODUCT CARD --- */
-        .card { background: var(--card-bg); border: 1px solid var(--border); transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); position: relative; }
-        .card:hover { transform: translateY(-5px); border-color: #333; }
+        /* PRODUCTS GRID */
+        .catalog-area { flex-grow: 1; padding: 40px 0 40px 40px; }
+        .products-grid { display: grid; gap: 20px; }
+        
+        /* Динамические размеры сетки */
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+
+        /* PRODUCT CARD */
+        .card { background: #080808; border: 1px solid var(--border); transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
+        .card:hover { border-color: #333; transform: translateY(-5px); }
         .card-img { aspect-ratio: 1/1.1; display: flex; align-items: center; justify-content: center; padding: 30px; overflow: hidden; }
-        .card-img img { max-width: 100%; transition: 0.5s; }
+        .card-img img { max-width: 100%; transition: 0.6s; }
         .card:hover .card-img img { transform: scale(1.1); }
         
-        .card-info { padding: 20px; border-top: 1px solid var(--border); }
-        .card-brand { font-size: 10px; color: var(--fire); font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
+        .card-info { padding: 20px; border-top: 1px solid var(--border); background: #000; }
+        .card-brand { font-size: 10px; color: var(--main); font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
         .card-name { font-size: 14px; color: #eee; height: 40px; overflow: hidden; line-height: 1.4; margin-bottom: 15px; }
         .card-footer { display: flex; justify-content: space-between; align-items: center; }
-        .price { font-size: 20px; font-weight: 900; }
-        .add-btn { width: 35px; height: 35px; background: #fff; color: #000; border: none; font-weight: 900; cursor: pointer; }
+        .price { font-size: 18px; font-weight: 900; }
+        .buy-btn { width: 35px; height: 35px; background: #fff; border: none; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .buy-btn:hover { background: var(--main); color: #fff; }
 
-        /* --- CART SIDEBAR --- */
-        .cart-panel { position: fixed; right: -100%; top: 0; width: 450px; height: 100%; background: #000; z-index: 2000; transition: 0.5s; border-left: 1px solid var(--border); padding: 40px; display: flex; flex-direction: column; }
+        /* CART PANEL */
+        .cart-panel { position: fixed; right: -100%; top: 0; width: 450px; height: 100%; background: #000; z-index: 2000; border-left: 1px solid var(--border); transition: 0.5s; padding: 40px; }
         .cart-panel.active { right: 0; }
-        .cart-header { font-size: 24px; font-weight: 900; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-        .cart-items { flex-grow: 1; overflow-y: auto; }
-        .checkout-btn { background: var(--fire); color: #fff; width: 100%; padding: 20px; border: none; font-weight: 900; cursor: pointer; margin-top: 20px; }
-
+        
         @media (max-width: 1024px) {
-            .sidebar { display: none; }
-            .content { padding: 20px 0; }
-            .grid-4 { grid-template-columns: repeat(2, 1fr); }
-            header { padding: 0 20px; }
-            .controls-bar { padding: 20px; }
+            aside { display: none; }
+            .catalog-area { padding: 20px 0; }
+            .grid-cols-4, .grid-cols-3 { grid-template-columns: repeat(2, 1fr); }
             .cart-panel { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo"><img src="santa.png"></div>
-        <div class="nav-center">
-            <div class="nav-link active">Каталог</div>
-            <div class="nav-link">Мужское</div>
-            <div class="nav-link">Женское</div>
-            <div class="nav-link">Sale</div>
+<header>
+    <div class="header_main">
+        <div class="logo"><img src="santa.png" alt="SGSHOP138"></div>
+        <nav class="header-nav">
+            <a href="#" class="nav-link active">Каталог</a>
+            <a href="#" class="nav-link">Новинки</a>
+            <a href="#" class="nav-link">Бренды</a>
+        </nav>
+        <div class="header-actions" onclick="toggleCart(true)" style="cursor:pointer">
+            🛒 <span id="cart-count" style="background:var(--main); padding:2px 7px; border-radius:10px; font-size:10px;">0</span>
         </div>
-        <div class="nav-right" onclick="toggleCart()" style="cursor:pointer">
-            🛒 <span id="cart-counter" style="background:var(--fire); padding:2px 6px; border-radius:10px; font-size:10px;">0</span>
-        </div>
-    </header>
+    </div>
+</header>
 
-    <div class="controls-bar">
-        <button class="filter-trigger">Фильтры</button>
-        <div class="grid-switcher">
+<div class="filter-wrapper">
+    <div class="filter-content">
+        <div class="filter-left">
+            <span id="current-filter-name" style="font-weight:900; text-transform:uppercase; font-size:12px;">Все товары</span>
+        </div>
+        <div class="grid-control">
             <span>СЕТКА</span>
-            <button class="grid-btn active" onclick="setGrid(4, this)">4</button>
-            <button class="grid-btn" onclick="setGrid(2, this)">2</button>
+            <input type="range" min="2" max="4" step="1" value="4" oninput="changeGrid(this.value)">
         </div>
     </div>
+</div>
 
-    <div class="main-container">
-        <aside class="sidebar">
-            <div class="filter-group">
-                <span class="filter-label">Бренды</span>
-                <div class="filter-item" onclick="filter('Nike')">Nike</div>
-                <div class="filter-item" onclick="filter('Adidas')">Adidas</div>
-                <div class="filter-item" onclick="filter('Jordan')">Jordan</div>
-                <div class="filter-item" onclick="filter('New Balance')">New Balance</div>
+<div class="main-container">
+    <aside>
+        <span class="filter-group-title">Бренды</span>
+        <div id="brands-menu">
+            <a class="brand-item active" onclick="filterBrand('all')">Все бренды</a>
             </div>
-            <div class="filter-group">
-                <span class="filter-label">Цена</span>
-                <div class="filter-item" onclick="sort('asc')">По возрастанию</div>
-                <div class="filter-item" onclick="sort('desc')">По убыванию</div>
+    </aside>
+
+    <main class="catalog-area">
+        <div class="products-grid grid-cols-4" id="catalog">
             </div>
-        </aside>
+    </main>
+</div>
 
-        <main class="content">
-            <div class="catalog grid-4" id="catalog-grid">
-                </div>
-        </main>
+<div class="cart-panel" id="cart">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:20px;">
+        <h2 style="font-weight:900; margin:0;">КОРЗИНА</h2>
+        <span onclick="toggleCart(false)" style="cursor:pointer; font-size:24px;">✕</span>
     </div>
+    <div id="cart-items" style="margin-top:20px; flex-grow:1; overflow-y:auto;"></div>
+    <div style="font-size:24px; font-weight:900; padding:20px 0;">ИТОГО: <span id="total-price">0</span> ₽</div>
+    <button onclick="sendOrder()" style="width:100%; background:var(--main); color:#fff; border:none; padding:20px; font-weight:900; cursor:pointer;">ОФОРМИТЬ ЧЕРЕЗ TG</button>
+</div>
 
-    <div class="cart-panel" id="cart-panel">
-        <div class="cart-header">КОРЗИНА <span onclick="toggleCart()" style="float:right; cursor:pointer">✕</span></div>
-        <div class="cart-items" id="cart-list"></div>
-        <div id="total-sum" style="font-size: 22px; font-weight: 900; padding: 20px 0;">Итого: 0 ₽</div>
-        <button class="checkout-btn" onclick="order()">ОФОРМИТЬ В TELEGRAM</button>
-    </div>
+<script>
+    let allProducts = [];
+    let cart = [];
 
-    <script>
-        let products = [];
-        let cart = [];
+    async function loadStock() {
+        try {
+            const res = await fetch('/api/get'); // Ссылка на твой XML
+            const xml = new DOMParser().parseFromString(await res.text(), "text/xml");
+            
+            allProducts = Array.from(xml.querySelectorAll("offer")).map(el => {
+                const name = el.querySelector("name")?.textContent || "";
+                return {
+                    id: el.getAttribute('id'),
+                    name: name,
+                    brand: name.split(' ')[0], // Первое слово из названия как бренд
+                    price: parseInt(el.querySelector("price")?.textContent || 0),
+                    img: el.querySelector("picture")?.textContent || ""
+                };
+            });
 
-        async function load() {
-            const res = await fetch('/api/get');
-            const text = await res.text();
-            const xml = new DOMParser().parseFromString(text, "text/xml");
-            products = Array.from(xml.querySelectorAll("offer")).map(el => ({
-                id: el.getAttribute('id'),
-                name: el.querySelector("name")?.textContent,
-                price: parseInt(el.querySelector("price")?.textContent),
-                img: el.querySelector("picture")?.textContent
-            }));
-            render(products);
-        }
+            buildBrandMenu();
+            render(allProducts);
+        } catch (e) { console.error("Ошибка загрузки данных"); }
+    }
 
-        function render(data) {
-            document.getElementById('catalog-grid').innerHTML = data.map(p => `
-                <div class="card">
-                    <div class="card-img"><img src="${p.img}" loading="lazy"></div>
-                    <div class="card-info">
-                        <div class="card-brand">Official Store</div>
-                        <div class="card-name">${p.name}</div>
-                        <div class="card-footer">
-                            <div class="price">${p.price.toLocaleString()} ₽</div>
-                            <button class="add-btn" onclick="addToCart('${p.id}')">+</button>
-                        </div>
+    function buildBrandMenu() {
+        const brands = [...new Set(allProducts.map(p => p.brand))].sort();
+        const menu = document.getElementById('brands-menu');
+        brands.forEach(b => {
+            const link = document.createElement('a');
+            link.className = 'brand-item';
+            link.innerText = b;
+            link.onclick = () => filterBrand(b, link);
+            menu.appendChild(link);
+        });
+    }
+
+    function render(data) {
+        const grid = document.getElementById('catalog');
+        grid.innerHTML = data.map(p => `
+            <div class="card">
+                <div class="card-img"><img src="${p.img}" loading="lazy"></div>
+                <div class="card-info">
+                    <div class="card-brand">${p.brand}</div>
+                    <div class="card-name">${p.name}</div>
+                    <div class="card-footer">
+                        <div class="price">${p.price.toLocaleString()} ₽</div>
+                        <button class="buy-btn" onclick="addToCart('${p.id}')">+</button>
                     </div>
                 </div>
-            `).join('');
-        }
+            </div>
+        `).join('');
+    }
 
-        function setGrid(num, btn) {
-            const grid = document.getElementById('catalog-grid');
-            document.querySelectorAll('.grid-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            grid.className = `catalog grid-${num}`;
-        }
+    function changeGrid(val) {
+        const grid = document.getElementById('catalog');
+        grid.className = `products-grid grid-cols-${val}`;
+    }
 
-        function addToCart(id) {
-            const p = products.find(x => x.id === id);
-            cart.push(p);
-            updateCart();
-            toggleCart(true);
-        }
+    function filterBrand(brand, el) {
+        document.querySelectorAll('.brand-item').forEach(i => i.classList.remove('active'));
+        if(el) el.classList.add('active');
+        document.getElementById('current-filter-name').innerText = brand === 'all' ? 'Все товары' : brand;
+        
+        const filtered = brand === 'all' ? allProducts : allProducts.filter(p => p.brand === brand);
+        render(filtered);
+    }
 
-        function updateCart() {
-            document.getElementById('cart-counter').innerText = cart.length;
-            let total = 0;
-            document.getElementById('cart-list').innerHTML = cart.map((p, i) => {
-                total += p.price;
-                return `<div style="display:flex; gap:15px; margin-bottom:20px; background:#111; padding:10px;">
-                    <img src="${p.img}" style="width:60px;">
-                    <div>
-                        <div style="font-size:11px;">${p.name}</div>
-                        <div style="font-weight:900;">${p.price} ₽</div>
-                    </div>
-                </div>`;
-            }).join('');
-            document.getElementById('total-sum').innerText = `Итого: ${total.toLocaleString()} ₽`;
-        }
+    function addToCart(id) {
+        const p = allProducts.find(x => x.id === id);
+        cart.push(p);
+        updateCartUI();
+        toggleCart(true);
+    }
 
-        function toggleCart(open = false) {
-            document.getElementById('cart-panel').classList.toggle('active', open);
-        }
+    function updateCartUI() {
+        document.getElementById('cart-count').innerText = cart.length;
+        let total = 0;
+        document.getElementById('cart-items').innerHTML = cart.map((p, i) => {
+            total += p.price;
+            return `<div style="display:flex; gap:15px; margin-bottom:20px; align-items:center;">
+                <img src="${p.img}" style="width:60px; height:60px; object-fit:contain; background:#111;">
+                <div style="flex-grow:1;">
+                    <div style="font-size:11px; color:#888;">${p.name}</div>
+                    <div style="font-weight:900;">${p.price.toLocaleString()} ₽</div>
+                </div>
+                <span onclick="removeFromCart(${i})" style="cursor:pointer; color:var(--main)">✕</span>
+            </div>`;
+        }).join('');
+        document.getElementById('total-price').innerText = total.toLocaleString();
+    }
 
-        function filter(brand) {
-            const filtered = products.filter(p => p.name.includes(brand));
-            render(filtered);
-        }
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        updateCartUI();
+    }
 
-        function sort(type) {
-            const sorted = [...products].sort((a,b) => type === 'asc' ? a.price - b.price : b.price - a.price);
-            render(sorted);
-        }
+    function toggleCart(state) {
+        document.getElementById('cart').classList.toggle('active', state);
+    }
 
-        function order() {
-            if(!cart.length) return;
-            let msg = "Заказ:\n";
-            cart.forEach(p => msg += `- ${p.name} (${p.price}₽)\n`);
-            window.open(`https://t.me/ТВОЙ_НИК?text=${encodeURIComponent(msg)}`);
-        }
+    function sendOrder() {
+        if(!cart.length) return;
+        let text = "НОВЫЙ ЗАКАЗ SGSHOP138:\n\n";
+        cart.forEach(p => text += `• ${p.name} — ${p.price}₽\n`);
+        text += `\nИТОГО: ${document.getElementById('total-price').innerText} ₽`;
+        window.open(`https://t.me/ТВОЙ_НИК?text=${encodeURIComponent(text)}`);
+    }
 
-        load();
-    </
+    loadStock();
+</script>
+</body>
+</html>
