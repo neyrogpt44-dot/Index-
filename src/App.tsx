@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { fetchInventory, ProductGroup } from './api/shop';
 import './App.css';
 
-// Тип для корзины
 interface CartItem {
   id: string;
   name: string;
@@ -12,30 +11,23 @@ interface CartItem {
 }
 
 function App() {
-  // Состояния
   const [products, setProducts] = useState<ProductGroup[]>([]);
   const [selected, setSelected] = useState<ProductGroup | null>(null);
   const [activeImg, setActiveImg] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // 1. Загрузка товаров
+  // Загрузка данных при запуске
   useEffect(() => {
-    fetchInventory().then(data => {
-      setProducts(data);
-    }).catch(err => console.error("Ошибка загрузки фида:", err));
+    fetchInventory().then(setProducts).catch(console.error);
   }, []);
 
-  // 2. Логика открытия модалки
   const openProduct = (p: ProductGroup) => {
     setSelected(p);
-    const firstColorImg = Object.keys(p.colors)[0];
-    setActiveImg(firstColorImg);
-    setSelectedSize(""); // Сбрасываем размер при открытии нового товара
+    setActiveImg(Object.keys(p.colors)[0]);
+    setSelectedSize(""); 
   };
 
-  // 3. Добавление в корзину
   const addToCart = () => {
     if (!selectedSize) {
       alert("Выберите размер!");
@@ -50,113 +42,76 @@ function App() {
       size: selectedSize
     };
     setCart([...cart, newItem]);
-    setSelected(null); // Закрываем карточку
-    alert("Товар добавлен в корзину");
+    alert("Добавлено в корзину!");
+    setSelected(null);
   };
 
   return (
     <div className="shop-container">
-      {/* Шапка с корзиной */}
-      <header className="shop-header">
+      <header className="header">
         <div className="logo">SGSHOP138</div>
-        <div className="cart-trigger" onClick={() => setIsCartOpen(!isCartOpen)}>
-          КОРЗИНА ({cart.length})
-        </div>
+        <div className="cart-status">КОРЗИНА: {cart.length}</div>
       </header>
 
-      {/* Сетка товаров */}
       <main className="product-grid">
-        {products.map((p, index) => (
-          <div key={index} className="product-card" onClick={() => openProduct(p)}>
-            <div className="card-image">
-              <img src={Object.keys(p.colors)[0]} alt={p.name} />
-            </div>
-            <div className="card-details">
-              <span className="vendor-label">{p.vendor}</span>
-              <h3 className="product-title">{p.name}</h3>
-              <div className="product-price">{Object.values(p.colors)[0].price} ₽</div>
+        {products.map((p, i) => (
+          <div key={i} className="product-card" onClick={() => openProduct(p)}>
+            <img src={Object.keys(p.colors)[0]} alt={p.name} />
+            <div className="card-info">
+              <span className="brand">{p.vendor}</span>
+              <h3 className="name">{p.name}</h3>
+              <div className="price">{Object.values(p.colors)[0].price} ₽</div>
             </div>
           </div>
         ))}
       </main>
 
-      {/* МОДАЛКА КАРТОЧКИ ТОВАРА (Diafan Style) */}
       {selected && (
         <div className="modal-overlay">
           <div className="modal-content">
             <button className="close-btn" onClick={() => setSelected(null)}>✕</button>
-            
             <div className="modal-left">
-              <div className="main-preview">
-                <img src={activeImg} alt="selected product" />
-              </div>
+              <img src={activeImg} className="main-view" alt="product" />
             </div>
-
             <div className="modal-right">
-              <span className="modal-vendor">{selected.vendor}</span>
-              <h1 className="modal-name">{selected.name}</h1>
-              <div className="modal-price">{selected.colors[activeImg].price} ₽</div>
+              <span className="m-brand">{selected.vendor}</span>
+              <h1 className="m-name">{selected.name}</h1>
+              <div className="m-price">{selected.colors[activeImg].price} ₽</div>
 
-              <div className="modal-section">
-                <label>ЦВЕТ</label>
-                <div className="color-options">
-                  {Object.keys(selected.colors).map(img => (
-                    <div 
-                      key={img} 
-                      className={`color-item ${img === activeImg ? 'active' : ''}`}
-                      onClick={() => {
-                        setActiveImg(img);
-                        setSelectedSize(""); // Сбрасываем размер, так как у другого цвета могут быть другие размеры
-                      }}
-                    >
-                      <img src={img} alt="variant" />
-                    </div>
-                  ))}
-                </div>
+              <div className="m-label">ЦВЕТ</div>
+              <div className="color-picker">
+                {Object.keys(selected.colors).map(img => (
+                  <div 
+                    key={img} 
+                    className={`color-item ${img === activeImg ? 'active' : ''}`}
+                    onClick={() => { setActiveImg(img); setSelectedSize(""); }}
+                  >
+                    <img src={img} alt="color variant" />
+                  </div>
+                ))}
               </div>
 
-              <div className="modal-section">
-                <label>РАЗМЕР (EU)</label>
-                <div className="size-options">
-                  {selected.colors[activeImg].sizes.sort().map(size => (
-                    <button 
-                      key={size} 
-                      className={`size-btn ${selectedSize === size ? 'active' : ''}`}
-                      onClick={() => setSelectedSize(size)}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
+              <div className="m-label">РАЗМЕР (EU)</div>
+              <div className="size-picker">
+                {selected.colors[activeImg].sizes.sort().map(s => (
+                  <button 
+                    key={s} 
+                    className={`size-btn ${selectedSize === s ? 'active' : ''}`}
+                    onClick={() => setSelectedSize(s)}
+                  >
+                    {s}
+                  </button>
+                ))}
               </div>
 
-              <button className="buy-button" onClick={addToCart}>
-                ДОБАВИТЬ В КОРЗИНУ
-              </button>
-
-              <div className="modal-description">
-                <label>ОПИСАНИЕ</label>
+              <button className="add-btn" onClick={addToCart}>В КОРЗИНУ</button>
+              
+              <div className="m-desc">
+                <div className="m-label">ОПИСАНИЕ</div>
                 <p>{selected.description}</p>
               </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Список корзины (простой выпадающий список) */}
-      {isCartOpen && (
-        <div className="cart-sidebar">
-          <h2>Ваша корзина</h2>
-          {cart.length === 0 ? <p>Пусто</p> : cart.map((item, i) => (
-            <div key={i} className="cart-item">
-              <img src={item.img} width="50" />
-              <div>
-                <div>{item.name}</div>
-                <small>Размер: {item.size} | {item.price} ₽</small>
-              </div>
-            </div>
-          ))}
-          <button className="checkout-btn">ОФОРМИТЬ ЗАКАЗ</button>
         </div>
       )}
     </div>
