@@ -2,157 +2,148 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SGSHOP138 | Professional Edition</title>
+    <title>SGSHOP138 | Grouped Catalog</title>
     <style>
-        :root { --fire: #ff0000; --bg: #000; --border: #1a1a1a; --text: #fff; --gray: #888; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; }
+        :root { --fire: #ff0000; --bg: #000; --border: #1a1a1a; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; }
         
-        /* Сетка и база */
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        
+        .container { max-width: 1400px; margin: 0 auto; padding: 40px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
         /* Карточка в каталоге */
-        .item { background: #080808; border: 1px solid var(--border); cursor: pointer; transition: 0.3s; }
-        .item:hover { border-color: #444; }
-        .item-img { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .item-img img { max-width: 100%; transition: 0.5s; }
-        .item:hover img { transform: scale(1.05); }
-        .item-info { padding: 15px; border-top: 1px solid var(--border); }
-        .item-price { font-weight: 900; font-size: 18px; color: var(--text); }
+        .item { background: #080808; border: 1px solid var(--border); cursor: pointer; padding: 15px; text-align: center; }
+        .item img { max-width: 100%; height: 200px; object-fit: contain; }
+        .color-dots { display: flex; justify-content: center; gap: 5px; margin-top: 10px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #333; border: 1px solid #555; }
 
-        /* MODAL - КАРТОЧКА ТОВАРА (То, что ты просил) */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-overlay.active { display: flex; }
+        /* Модалка товара */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .product-box { background: #000; width: 90%; max-width: 1100px; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); }
         
-        .product-card { background: #000; border: 1px solid var(--border); width: 100%; max-width: 1000px; display: flex; position: relative; max-height: 90vh; overflow-y: auto; }
-        .close-modal { position: absolute; right: 20px; top: 20px; font-size: 30px; cursor: pointer; z-index: 10; }
+        .image-side { background: #0a0a0a; padding: 40px; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); }
+        .image-side img { max-width: 100%; max-height: 500px; }
 
-        .pc-left { flex: 1; background: #0a0a0a; display: flex; align-items: center; justify-content: center; padding: 40px; border-right: 1px solid var(--border); }
-        .pc-left img { max-width: 100%; object-fit: contain; }
+        .info-side { padding: 40px; }
+        .color-picker { display: flex; gap: 10px; margin: 20px 0; }
+        .color-thumb { width: 60px; height: 60px; border: 1px solid #222; cursor: pointer; padding: 5px; transition: 0.2s; }
+        .color-thumb.active { border-color: var(--fire); }
+        .color-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        .pc-right { flex: 1; padding: 50px; display: flex; flex-direction: column; }
-        .pc-brand { color: var(--fire); font-weight: 900; text-transform: uppercase; font-size: 12px; margin-bottom: 10px; }
-        .pc-title { font-size: 24px; font-weight: 700; margin-bottom: 15px; }
-        .pc-price { font-size: 32px; font-weight: 900; margin-bottom: 30px; }
-        
-        /* Размеры */
-        .section-label { font-size: 11px; font-weight: 800; color: var(--gray); text-transform: uppercase; margin-bottom: 15px; display: block; }
-        .size-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 30px; }
-        .size-btn { border: 1px solid #333; background: none; color: #fff; padding: 10px; cursor: pointer; font-size: 12px; transition: 0.2s; }
-        .size-btn:hover { border-color: #fff; }
-        .size-btn.selected { background: #fff; color: #000; font-weight: 800; border-color: #fff; }
+        .size-selector { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
+        .size-btn { background: none; border: 1px solid #333; color: #fff; padding: 10px; cursor: pointer; }
+        .size-btn.active { background: #fff; color: #000; border-color: #fff; }
 
-        /* Описание */
-        .pc-description { font-size: 14px; color: #aaa; line-height: 1.6; margin-bottom: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
-
-        .add-to-cart-big { background: var(--fire); color: #fff; border: none; padding: 20px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        .add-to-cart-big:hover { background: #cc0000; transform: translateY(-2px); }
-
-        @media (max-width: 768px) {
-            .product-card { flex-direction: column; }
-            .pc-right { padding: 30px; }
-        }
+        .buy-btn { width: 100%; background: var(--fire); color: #fff; border: none; padding: 20px; font-weight: 800; margin-top: 30px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="grid" id="catalog-grid"></div>
+    <div class="grid" id="main-grid"></div>
 </div>
 
-<div class="modal-overlay" id="product-modal">
-    <div class="product-card" id="card-content">
-        </div>
+<div class="modal" id="p-modal">
+    <div class="product-box" id="p-content"></div>
 </div>
 
 <script>
-    let products = [];
-    let selectedSize = null;
+    let groupedProducts = {};
 
-    async function init() {
-        const res = await fetch('/api/get'); // Твой XML
+    async function load() {
+        const res = await fetch('/api/get');
         const xml = new DOMParser().parseFromString(await res.text(), "text/xml");
-        
-        products = Array.from(xml.querySelectorAll("offer")).map(el => ({
-            id: el.getAttribute('id'),
-            name: el.querySelector("name")?.textContent,
-            brand: el.querySelector("vendor")?.textContent || "Бренд",
-            price: parseInt(el.querySelector("price")?.textContent),
-            img: el.querySelector("picture")?.textContent,
-            desc: el.querySelector("description")?.textContent || "Описание отсутствует",
-            sizes: ["39", "40", "41", "42", "43", "44", "45"] // В реале тяни из тегов <param name="Размер">
-        }));
-        
-        renderCatalog();
+        const offers = Array.from(xml.querySelectorAll("offer"));
+
+        // Группируем по названию (убираем цвет из названия для ключа, если нужно)
+        offers.forEach(el => {
+            const name = el.querySelector("name").textContent;
+            const baseName = name.split('(')[0].trim(); // Группируем всё, что до скобок (или по vendorCode)
+            
+            if (!groupedProducts[baseName]) {
+                groupedProducts[baseName] = {
+                    name: baseName,
+                    brand: el.querySelector("vendor")?.textContent || "Brand",
+                    desc: el.querySelector("description")?.textContent || "",
+                    variants: []
+                };
+            }
+            
+            groupedProducts[baseName].variants.push({
+                id: el.getAttribute('id'),
+                price: el.querySelector("price").textContent,
+                img: el.querySelector("picture").textContent,
+                // Если в XML есть цвет в параметрах:
+                color: el.querySelector('param[name="Цвет"]')?.textContent || "Стандарт"
+            });
+        });
+
+        renderGrid();
     }
 
-    function renderCatalog() {
-        const grid = document.getElementById('catalog-grid');
-        grid.innerHTML = products.map(p => `
-            <div class="item" onclick="openProduct('${p.id}')">
-                <div class="item-img"><img src="${p.img}"></div>
-                <div class="item-info">
-                    <div style="font-size:10px; color:var(--fire); font-weight:900;">${p.brand}</div>
-                    <div style="font-size:14px; margin:5px 0 10px;">${p.name}</div>
-                    <div class="item-price">${p.price.toLocaleString()} ₽</div>
+    function renderGrid() {
+        const grid = document.getElementById('main-grid');
+        grid.innerHTML = Object.values(groupedProducts).map(p => `
+            <div class="item" onclick="openProduct('${p.name.replace(/'/g, "\\'")}')">
+                <img src="${p.variants[0].img}">
+                <div style="margin-top:15px;">
+                    <div style="color:var(--fire); font-size:10px; font-weight:800;">${p.brand}</div>
+                    <div style="font-size:14px; margin:5px 0;">${p.name}</div>
+                    <div class="color-dots">${p.variants.map(() => `<div class="dot"></div>`).join('')}</div>
                 </div>
             </div>
         `).join('');
     }
 
-    function openProduct(id) {
-        const p = products.find(x => x.id === id);
-        selectedSize = null;
+    function openProduct(name) {
+        const p = groupedProducts[name];
+        const modal = document.getElementById('p-modal');
         
-        const modal = document.getElementById('product-modal');
-        const content = document.getElementById('card-content');
+        renderModal(p, 0); // По умолчанию открываем первый вариант (цвет)
+        modal.classList.add('active');
+    }
+
+    function renderModal(p, variantIdx) {
+        const variant = p.variants[variantIdx];
+        const content = document.getElementById('p-content');
         
         content.innerHTML = `
-            <span class="close-modal" onclick="closeModal()">✕</span>
-            <div class="pc-left">
-                <img src="${p.img}" id="main-img">
+            <div class="image-side">
+                <img src="${variant.img}" id="main-view">
             </div>
-            <div class="pc-right">
-                <div class="pc-brand">${p.brand}</div>
-                <h1 class="pc-title">${p.name}</h1>
-                <div class="pc-price">${p.price.toLocaleString()} ₽</div>
+            <div class="info-side">
+                <span style="color:var(--fire); font-weight:800;">${p.brand}</span>
+                <h2 style="margin: 10px 0;">${p.name}</h2>
+                <div style="font-size:24px; font-weight:900;">${variant.price} ₽</div>
                 
-                <span class="section-label">Выберите размер (EU)</span>
-                <div class="size-grid">
-                    ${p.sizes.map(s => `<button class="size-btn" onclick="selectSize(this, '${s}')">${s}</button>`).join('')}
+                <p style="color:#666; font-size:13px; margin-top:20px;">ЦВЕТ: ${variant.color}</p>
+                <div class="color-picker">
+                    ${p.variants.map((v, i) => `
+                        <div class="color-thumb ${i === variantIdx ? 'active' : ''}" onclick="changeVariant('${p.name.replace(/'/g, "\\'")}', ${i})">
+                            <img src="${v.img}">
+                        </div>
+                    `).join('')}
                 </div>
 
-                <span class="section-label">О товаре</span>
-                <div class="pc-description">${p.desc}</div>
+                <p style="color:#666; font-size:13px;">ВЫБЕРИТЕ РАЗМЕР (EU)</p>
+                <div class="size-selector">
+                    ${["40", "41", "42", "43", "44"].map(s => `<button class="size-btn">${s}</button>`).join('')}
+                </div>
 
-                <button class="add-to-cart-big" onclick="addToCart('${p.id}')">ДОБАВИТЬ В КОРЗИНУ</button>
+                <button class="buy-btn">ДОБАВИТЬ В КОРЗИНУ</button>
+                <p style="font-size:12px; color:#444; margin-top:20px; cursor:pointer;" onclick="closeM()">ЗАКРЫТЬ</p>
             </div>
         `;
-        
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
     }
 
-    function selectSize(btn, size) {
-        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedSize = size;
+    // Функция смены цвета внутри карточки
+    window.changeVariant = function(name, idx) {
+        renderModal(groupedProducts[name], idx);
     }
 
-    function closeModal() {
-        document.getElementById('product-modal').classList.remove('active');
-        document.body.style.overflow = 'auto';
-    }
+    window.closeM = () => document.getElementById('p-modal').classList.remove('active');
 
-    function addToCart(id) {
-        if(!selectedSize) return alert('Пожалуйста, выберите размер!');
-        const p = products.find(x => x.id === id);
-        alert(`Добавлено: ${p.name}, Размер: ${selectedSize}`);
-        closeModal();
-    }
-
-    init();
+    load();
 </script>
 </body>
 </html>
